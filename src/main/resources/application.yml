@@ -1,0 +1,18 @@
+spring:
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    # 👇 방금 우리가 뚫어놓은 공인 IP와 3307 포트로 연결!
+    url: jdbc:mysql://116.37.141.23:3307/mysql?serverTimezone=Asia/Seoul&characterEncoding=UTF-8
+    username: root
+    password: mysecretpassword123!
+  
+  jpa:
+    hibernate:
+      ddl-auto: update # 엔티티(클래스)를 만들면 DB 테이블을 자동으로 생성/수정해 줍니다.
+    show-sql: true     # 콘솔에 실행되는 SQL 쿼리를 보여줍니다.
+
+  data:
+    redis:
+      # 👇 Redis 서버 연결
+      host: 116.37.141.23
+      port: 6379
