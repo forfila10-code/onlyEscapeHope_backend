@@ -35,3 +35,14 @@ out/
 
 ### VS Code ###
 .vscode/
+
+
+### macOS (필수!) ###
+.DS_Store
+**/.DS_Store
+.AppleDouble
+.LSOverride
+Icon
+Network Trash Folder
+Temporary Items
+.apdisk
