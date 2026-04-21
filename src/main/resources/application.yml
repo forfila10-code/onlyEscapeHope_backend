@@ -2,7 +2,7 @@ spring:
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
     # 👇 방금 우리가 뚫어놓은 공인 IP와 3307 포트로 연결!
-    url: jdbc:mysql://116.37.141.23:3307/mysql?serverTimezone=Asia/Seoul&characterEncoding=UTF-8
+    url: jdbc:mysql://116.37.141.23:3307/account_book?serverTimezone=Asia/Seoul&characterEncoding=UTF-8
     username: root
     password: mysecretpassword123!
   
@@ -16,3 +16,26 @@ spring:
       # 👇 Redis 서버 연결
       host: 116.37.141.23
       port: 6379
+      
+  security:
+    oauth2:
+      client:
+        registration:
+          kakao:
+            client-id: "27630c2159f4c6fb2e7c7b35990f6e72"
+            redirect-uri: "{baseUrl}/{action}/oauth2/code/{registrationId}"
+            client-authentication-method: client_secret_post
+            authorization-grant-type: authorization_code
+            scope: profile_nickname # 이메일은 빼고 닉네임만 받습니다!
+            client-name: Kakao
+            client-secret: "9fqDKrCWeSJnlxV4Q5D6WrquUq3G0b7A"
+        provider:
+          kakao:
+            authorization-uri: https://kauth.kakao.com/oauth/authorize
+            token-uri: https://kauth.kakao.com/oauth/token
+            user-info-uri: https://kapi.kakao.com/v2/user/me
+            user-name-attribute: id
+
+server:
+  port: 8081  # 8080 대신 8081이나 9090 등 원하는 번호로 바꿉니다.
+
