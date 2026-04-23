@@ -39,3 +39,23 @@ spring:
 server:
   port: 8081  # 8080 대신 8081이나 9090 등 원하는 번호로 바꿉니다.
 
+# CORS 허용 Origin 설정 (운영 배포 시 이 값만 수정하면 됩니다)
+# cors:
+#  allowed-origins:
+#    - "http://localhost:5173"
+#    - "https://example.com"
+#    - "http://192.168.0.10:5173" 이런식으로 추가해주면 됨.
+cors:
+  allowed-origins: "http://localhost:5173"
+
+# JWT 설정
+# ⚠️ 운영 환경에서는 반드시 환경변수(JWT_SECRET)로 교체하세요!
+# secret은 Base64 인코딩된 256bit(32바이트) 이상의 문자열이어야 합니다.
+jwt:
+  secret: "cG9rZWN0ZnJlZS1qd3Qtc2VjcmV0LWtleS1kb25vdC11c2UtaW4tcHJvZHVjdGlvbi1jaGFuZ2UtbWUtcGxlYXNl"
+  expiration-ms: 86400000  # 24시간 (밀리초)
+
+# 리액트 프론트엔드 주소 (OAuth2 로그인 성공 후 토큰을 전달할 URL)
+frontend:
+  url: "http://localhost:5173"
+

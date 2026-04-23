@@ -10,6 +10,7 @@ import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Service;
 
 import com.pokectfree.login.domain.User;
+import com.pokectfree.login.dto.CustomOAuth2User;
 import com.pokectfree.login.repository.UserRepository;
 
 import java.util.Map;
@@ -55,6 +56,8 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
                     return userRepository.save(newUser); // 알아서 insert 쿼리 날림!
                 });
 
-        return oAuth2User;
+        // 5. 우리 DB의 User 엔티티를 CustomOAuth2User로 감싸서 반환
+        //    → 세션/SecurityContextHolder의 principal에 User.id가 포함됩니다.
+        return new CustomOAuth2User(user, oAuth2User.getAttributes());
     }
 }
