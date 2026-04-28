@@ -1,13 +1,17 @@
 package com.pokectfree.transaction.controller;
 
 import com.pokectfree.login.dto.CustomOAuth2User;
+import com.pokectfree.transaction.dto.MonthlyStatisticsDto;
 import com.pokectfree.transaction.dto.TransactionRequestDto;
+import com.pokectfree.transaction.dto.TransactionResponseDto;
 import com.pokectfree.transaction.service.TransactionService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -61,5 +65,103 @@ public class TransactionController {
         return ResponseEntity
                 .status(201)
                 .body(Map.of("id", savedId));
+    }
+
+    /**
+     * 로그인 유저의 전체 거래 내역 조회
+     *
+     * GET /api/transactions
+     * Header: Authorization: Bearer <token>
+     *
+     * 응답 예시:
+     * HTTP 200 OK
+     * [
+     *   { "id": 2, "type": "INCOME",  "date": "2026-04-25", "amount": 3000000, "category": "급여", "memo": null },
+     *   { "id": 1, "type": "EXPENSE", "date": "2026-04-01", "amount": 15000,   "category": "식비", "memo": "점심" }
+     * ]
+     */
+    @GetMapping
+    public ResponseEntity<List<TransactionResponseDto>> getAllTransactions(
+            @AuthenticationPrincipal CustomOAuth2User principal) {
+
+        Long userId = principal.getUser().getId();
+        List<TransactionResponseDto> result = transactionService.getAllTransactions(userId);
+        return ResponseEntity.ok(result);
+    }
+
+    /**
+     * 특정 연도·월의 거래 내역 목록 조회 (달력 대시보드용)
+     *
+     * GET /api/transactions/monthly?year=2026&month=4
+     * Header: Authorization: Bearer <token>
+     *
+     * 응답 예시:
+     * HTTP 200 OK
+     * [
+     *   { "id": 1, "type": "EXPENSE", "date": "2026-04-01", "amount": 15000, "category": "식비", "memo": "점심" },
+     *   { "id": 2, "type": "INCOME",  "date": "2026-04-25", "amount": 3000000, "category": "급여", "memo": null }
+     * ]
+     *
+     * @param year      조회 연도 (필수, 예: 2026)
+     * @param month     조회 월   (필수, 예: 4)
+     * @param principal JWT로 인증된 로그인 유저 정보
+     */
+    @GetMapping("/monthly")
+    public ResponseEntity<List<TransactionResponseDto>> getMonthlyTransactions(
+            @RequestParam int year,
+            @RequestParam int month,
+            @AuthenticationPrincipal CustomOAuth2User principal) {
+
+        Long userId = principal.getUser().getId();
+
+        List<TransactionResponseDto> result =
+                transactionService.getMonthlyTransactions(userId, year, month);
+
+        return ResponseEntity.ok(result);
+    }
+
+    /**
+     * 특정 연도·월의 카테고리별 지출/수입 통계 조회 (차트 시각화용)
+     *
+     * year, month 파라미터 생략 시 현재 연월을 기본값으로 사용합니다.
+     *
+     * GET /api/transactions/statistics?year=2026&month=4
+     * Header: Authorization: Bearer <token>
+     *
+     * 응답 예시:
+     * HTTP 200 OK
+     * {
+     *   "year": 2026,
+     *   "month": 4,
+     *   "totalIncome": 3000000,
+     *   "totalExpense": 230000,
+     *   "netAmount": 2770000,
+     *   "categoryBreakdown": [
+     *     { "category": "급여",   "type": "INCOME",  "totalAmount": 3000000 },
+     *     { "category": "식비",   "type": "EXPENSE", "totalAmount": 150000  },
+     *     { "category": "교통비", "type": "EXPENSE", "totalAmount": 80000   }
+     *   ]
+     * }
+     *
+     * @param year      조회 연도 (선택, 기본값: 현재 연도)
+     * @param month     조회 월   (선택, 기본값: 현재 월)
+     * @param principal JWT로 인증된 로그인 유저 정보
+     */
+    @GetMapping("/statistics")
+    public ResponseEntity<MonthlyStatisticsDto> getMonthlyStatistics(
+            @RequestParam(required = false) Integer year,
+            @RequestParam(required = false) Integer month,
+            @AuthenticationPrincipal CustomOAuth2User principal) {
+
+        // year, month 미입력 시 현재 연월로 대체
+        LocalDate now = LocalDate.now();
+        int targetYear  = (year  != null) ? year  : now.getYear();
+        int targetMonth = (month != null) ? month : now.getMonthValue();
+
+        Long userId = principal.getUser().getId();
+        MonthlyStatisticsDto result =
+                transactionService.getMonthlyStatistics(userId, targetYear, targetMonth);
+
+        return ResponseEntity.ok(result);
     }
 }

@@ -6,6 +6,7 @@ import com.pokectfree.login.jwt.JwtTokenProvider;
 import com.pokectfree.login.repository.UserRepository;
 import com.pokectfree.login.service.CustomOAuth2UserService;
 import lombok.RequiredArgsConstructor;
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.Customizer;
@@ -58,6 +59,8 @@ public class SecurityConfig {
             .authorizeHttpRequests(auth -> auth
                 // 카카오 OAuth2 흐름 엔드포인트는 인증 없이 허용
                 .requestMatchers("/", "/oauth2/**", "/login/**").permitAll()
+                // /error 는 스프링 내부 에러 처리 경로 → 시큐리티가 401로 가로채지 않도록 허용
+                .requestMatchers("/error").permitAll()
                 // /api/** 는 반드시 JWT 인증 필요
                 .requestMatchers("/api/**").authenticated()
                 .anyRequest().authenticated()
@@ -73,7 +76,18 @@ public class SecurityConfig {
                 .successHandler(oAuth2LoginSuccessHandler)
             )
 
-            // ⑥ JWT 인증 필터를 UsernamePasswordAuthenticationFilter 앞에 등록
+            // ⑥ 인증 실패 시 401 Unauthorized 반환 (프론트엔드 axios interceptor 연동용)
+            //    - 토큰 없음 / 만료 / 유효하지 않은 토큰 → 401 + "Unauthorized" 텍스트
+            //    - 프론트에서 401 수신 시 로그인 페이지로 리다이렉트 처리
+            .exceptionHandling(e -> e
+                .authenticationEntryPoint((request, response, ex) -> {
+                    response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                    response.setContentType("text/plain;charset=UTF-8");
+                    response.getWriter().write("Unauthorized");
+                })
+            )
+
+            // ⑦ JWT 인증 필터를 UsernamePasswordAuthenticationFilter 앞에 등록
             //    → 모든 요청에서 Authorization 헤더를 먼저 검증
             .addFilterBefore(
                 new JwtAuthenticationFilter(jwtTokenProvider, userRepository),
