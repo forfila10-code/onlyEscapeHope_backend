@@ -15,9 +15,9 @@ import java.util.List;
  *   "totalExpense": 230000,
  *   "netAmount": 2770000,
  *   "categoryBreakdown": [
- *     { "category": "급여",  "type": "INCOME",  "totalAmount": 3000000 },
- *     { "category": "식비",  "type": "EXPENSE", "totalAmount": 150000  },
- *     { "category": "교통비","type": "EXPENSE", "totalAmount": 80000   }
+ *     { "category": "급여",  "type": "INCOME",  "totalAmount": 3000000, "percent": 100.0 },
+ *     { "category": "식비",  "type": "EXPENSE", "totalAmount": 150000,  "percent": 65.2  },
+ *     { "category": "교통비","type": "EXPENSE", "totalAmount": 80000,   "percent": 34.8  }
  *   ]
  * }
  */

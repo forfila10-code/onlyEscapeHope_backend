@@ -93,7 +93,8 @@ public class TransactionService {
      * 처리 흐름:
      *   1. 해당 월 거래 내역 전체 조회 (기존 월별 쿼리 재사용)
      *   2. Java Stream으로 (category, type) 기준 그룹화 후 금액 합산
-     *   3. 총 수입 / 총 지출 / 카테고리별 합계 → MonthlyStatisticsDto 반환
+     *   3. 총 수입 / 총 지출 기준으로 카테고리별 퍼센트 계산
+     *   4. 총 수입 / 총 지출 / 카테고리별 합계 → MonthlyStatisticsDto 반환
      *
      * @param userId 로그인 유저의 DB PK
      * @param year   조회 연도 (예: 2026)
@@ -109,6 +110,17 @@ public class TransactionService {
         List<Transaction> transactions =
                 transactionRepository.findByUser_IdAndDateBetweenOrderByDateAsc(userId, startDate, endDate);
 
+        // 총 수입 / 총 지출 합산
+        long totalIncome = transactions.stream()
+                .filter(t -> "INCOME".equals(t.getType()))
+                .mapToLong(Transaction::getAmount)
+                .sum();
+
+        long totalExpense = transactions.stream()
+                .filter(t -> "EXPENSE".equals(t.getType()))
+                .mapToLong(Transaction::getAmount)
+                .sum();
+
         // (category + type) 복합 키로 그룹화 → 금액 합산
         // 예: "식비|EXPENSE" → 150000L
         Map<String, Long> grouped = transactions.stream()
@@ -121,21 +133,16 @@ public class TransactionService {
         List<CategoryStatisticsDto> categoryBreakdown = grouped.entrySet().stream()
                 .map(e -> {
                     String[] parts = e.getKey().split("\\|", 2);
-                    return new CategoryStatisticsDto(parts[0], parts[1], e.getValue());
+                    String category = parts[0];
+                    String type = parts[1];
+                    long amount = e.getValue();
+                    long typeTotal = "INCOME".equals(type) ? totalIncome : totalExpense;
+                    double percent = typeTotal > 0 ? (amount * 100.0) / typeTotal : 0.0;
+
+                    return new CategoryStatisticsDto(category, type, amount, percent);
                 })
                 .sorted(Comparator.comparingLong(CategoryStatisticsDto::getTotalAmount).reversed())
                 .collect(Collectors.toList());
-
-        // 총 수입 / 총 지출 합산
-        long totalIncome = transactions.stream()
-                .filter(t -> "INCOME".equals(t.getType()))
-                .mapToLong(Transaction::getAmount)
-                .sum();
-
-        long totalExpense = transactions.stream()
-                .filter(t -> "EXPENSE".equals(t.getType()))
-                .mapToLong(Transaction::getAmount)
-                .sum();
 
         return new MonthlyStatisticsDto(year, month, totalIncome, totalExpense, categoryBreakdown);
     }
