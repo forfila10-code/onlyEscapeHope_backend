@@ -34,4 +34,13 @@ public class Workspace extends BaseTimeEntity {
     public Workspace(String name) {
         this.name = name;
     }
+
+    /**
+     * 워크스페이스 이름을 변경합니다.
+     *
+     * @param name 새로운 워크스페이스 이름
+     */
+    public void updateName(String name) {
+        this.name = name;
+    }
 }

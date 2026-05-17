@@ -68,4 +68,9 @@ public interface TransactionRepository extends JpaRepository<Transaction, Long> 
      * 메인페이지 최근 내역에 표시할 워크스페이스별 최신 거래 5건 조회
      */
     List<Transaction> findTop5ByWorkspace_IdOrderByDateDescIdDesc(Long workspaceId);
+
+    /**
+     * 특정 워크스페이스에 속한 모든 거래 내역 삭제 (워크스페이스 삭제 시 연쇄 처리)
+     */
+    void deleteByWorkspace_Id(Long workspaceId);
 }

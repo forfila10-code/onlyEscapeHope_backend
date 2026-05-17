@@ -14,4 +14,8 @@ public interface WorkspaceMemberRepository extends JpaRepository<WorkspaceMember
     List<WorkspaceMember> findByWorkspace_IdOrderByUser_NicknameAsc(Long workspaceId);
 
     Optional<WorkspaceMember> findFirstByUser_IdOrderByIdAsc(Long userId);
+
+    void deleteByWorkspace_Id(Long workspaceId);
+
+    Optional<WorkspaceMember> findByWorkspace_IdAndUser_Id(Long workspaceId, Long userId);
 }
