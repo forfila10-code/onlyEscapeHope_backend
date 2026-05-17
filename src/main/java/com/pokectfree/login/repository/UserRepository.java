@@ -9,4 +9,6 @@ public interface UserRepository extends JpaRepository<User, Long> {
     
     // 카카오 로그인 시, 이미 가입된 유저인지 확인하기 위한 커스텀 검색기
     Optional<User> findByProviderAndProviderId(String provider, String providerId);
+
+    Optional<User> findByEmail(String email);
 }

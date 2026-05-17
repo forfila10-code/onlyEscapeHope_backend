@@ -43,10 +43,29 @@ public interface TransactionRepository extends JpaRepository<Transaction, Long> 
     );
 
     /**
+     * 특정 워크스페이스의 날짜 범위 내 거래 내역을 날짜 오름차순으로 조회
+     */
+    List<Transaction> findByWorkspace_IdAndDateBetweenOrderByDateAsc(
+            Long workspaceId,
+            LocalDate startDate,
+            LocalDate endDate
+    );
+
+    /**
      * 특정 유저의 전체 거래 내역을 날짜 내림차순으로 조회 (최신 순)
      *
      * @param userId 로그인 유저의 DB PK
      * @return 전체 거래 내역 리스트 (날짜 내림차순)
      */
     List<Transaction> findByUser_IdOrderByDateDesc(Long userId);
+
+    /**
+     * 특정 워크스페이스의 전체 거래 내역을 날짜 내림차순으로 조회
+     */
+    List<Transaction> findByWorkspace_IdOrderByDateDesc(Long workspaceId);
+
+    /**
+     * 메인페이지 최근 내역에 표시할 워크스페이스별 최신 거래 5건 조회
+     */
+    List<Transaction> findTop5ByWorkspace_IdOrderByDateDescIdDesc(Long workspaceId);
 }

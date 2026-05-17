@@ -1,6 +1,7 @@
 package com.pokectfree.transaction.controller;
 
 import com.pokectfree.login.dto.CustomOAuth2User;
+import com.pokectfree.transaction.dto.HomeSummaryDto;
 import com.pokectfree.transaction.dto.MonthlyStatisticsDto;
 import com.pokectfree.transaction.dto.TransactionRequestDto;
 import com.pokectfree.transaction.dto.TransactionResponseDto;
@@ -82,10 +83,11 @@ public class TransactionController {
      */
     @GetMapping
     public ResponseEntity<List<TransactionResponseDto>> getAllTransactions(
+            @RequestParam(required = false) Long workspaceId,
             @AuthenticationPrincipal CustomOAuth2User principal) {
 
         Long userId = principal.getUser().getId();
-        List<TransactionResponseDto> result = transactionService.getAllTransactions(userId);
+        List<TransactionResponseDto> result = transactionService.getAllTransactions(userId, workspaceId);
         return ResponseEntity.ok(result);
     }
 
@@ -110,12 +112,42 @@ public class TransactionController {
     public ResponseEntity<List<TransactionResponseDto>> getMonthlyTransactions(
             @RequestParam int year,
             @RequestParam int month,
+            @RequestParam(required = false) Long workspaceId,
             @AuthenticationPrincipal CustomOAuth2User principal) {
 
         Long userId = principal.getUser().getId();
 
         List<TransactionResponseDto> result =
-                transactionService.getMonthlyTransactions(userId, year, month);
+                transactionService.getMonthlyTransactions(userId, workspaceId, year, month);
+
+        return ResponseEntity.ok(result);
+    }
+
+    /**
+     * 메인페이지 홈 요약 조회
+     *
+     * GET /api/transactions/home-summary?year=2026&month=5&workspaceId=1
+     *
+     * @param year 조회 연도 (선택, 기본값: 현재 연도)
+     * @param month 조회 월 (선택, 기본값: 현재 월)
+     * @param workspaceId 조회할 워크스페이스 ID (선택, 기본값: 개인 워크스페이스)
+     * @param principal JWT로 인증된 로그인 유저 정보
+     * @return 이번 달 총 수입/지출/순액과 최근 거래 5건
+     */
+    @GetMapping("/home-summary")
+    public ResponseEntity<HomeSummaryDto> getHomeSummary(
+            @RequestParam(required = false) Integer year,
+            @RequestParam(required = false) Integer month,
+            @RequestParam(required = false) Long workspaceId,
+            @AuthenticationPrincipal CustomOAuth2User principal) {
+
+        LocalDate now = LocalDate.now();
+        int targetYear = (year != null) ? year : now.getYear();
+        int targetMonth = (month != null) ? month : now.getMonthValue();
+
+        Long userId = principal.getUser().getId();
+        HomeSummaryDto result =
+                transactionService.getHomeSummary(userId, workspaceId, targetYear, targetMonth);
 
         return ResponseEntity.ok(result);
     }
@@ -151,6 +183,7 @@ public class TransactionController {
     public ResponseEntity<MonthlyStatisticsDto> getMonthlyStatistics(
             @RequestParam(required = false) Integer year,
             @RequestParam(required = false) Integer month,
+            @RequestParam(required = false) Long workspaceId,
             @AuthenticationPrincipal CustomOAuth2User principal) {
 
         // year, month 미입력 시 현재 연월로 대체
@@ -160,7 +193,7 @@ public class TransactionController {
 
         Long userId = principal.getUser().getId();
         MonthlyStatisticsDto result =
-                transactionService.getMonthlyStatistics(userId, targetYear, targetMonth);
+                transactionService.getMonthlyStatistics(userId, workspaceId, targetYear, targetMonth);
 
         return ResponseEntity.ok(result);
     }

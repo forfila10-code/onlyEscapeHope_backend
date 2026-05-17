@@ -15,7 +15,10 @@ import java.time.LocalDate;
  *   "date": "2026-04-23",
  *   "amount": 15000,
  *   "category": "식비",
- *   "memo": "점심 식사"
+ *   "memo": "점심 식사",
+ *   "workspaceId": 1,
+ *   "paidByUserId": 1,
+ *   "paidByNickname": "홍길동"
  * }
  */
 @Getter
@@ -39,6 +42,15 @@ public class TransactionResponseDto {
     /** 메모 (선택 입력, null 가능) */
     private final String memo;
 
+    /** 거래가 속한 워크스페이스 ID */
+    private final Long workspaceId;
+
+    /** 실제 결제자 userId */
+    private final Long paidByUserId;
+
+    /** 실제 결제자 닉네임 */
+    private final String paidByNickname;
+
     /**
      * Transaction 엔티티 → ResponseDto 변환 생성자
      */
@@ -49,5 +61,14 @@ public class TransactionResponseDto {
         this.amount   = transaction.getAmount();
         this.category = transaction.getCategory();
         this.memo     = transaction.getMemo();
+        this.workspaceId = transaction.getWorkspace() != null
+                ? transaction.getWorkspace().getId()
+                : null;
+        this.paidByUserId = transaction.getPaidBy() != null
+                ? transaction.getPaidBy().getId()
+                : null;
+        this.paidByNickname = transaction.getPaidBy() != null
+                ? transaction.getPaidBy().getNickname()
+                : null;
     }
 }

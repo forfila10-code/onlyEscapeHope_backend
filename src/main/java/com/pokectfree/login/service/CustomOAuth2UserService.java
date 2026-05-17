@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 import com.pokectfree.login.domain.User;
 import com.pokectfree.login.dto.CustomOAuth2User;
 import com.pokectfree.login.repository.UserRepository;
+import com.pokectfree.workspace.service.WorkspaceService;
 
 import java.util.Map;
 
@@ -21,6 +22,7 @@ import java.util.Map;
 public class CustomOAuth2UserService extends DefaultOAuth2UserService {
 
     private final UserRepository userRepository;
+    private final WorkspaceService workspaceService;
 
     @Override
     public OAuth2User loadUser(OAuth2UserRequest userRequest) throws OAuth2AuthenticationException {
@@ -55,6 +57,7 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
                             .build();
                     return userRepository.save(newUser); // 알아서 insert 쿼리 날림!
                 });
+        workspaceService.ensurePersonalWorkspace(user);
 
         // 5. 우리 DB의 User 엔티티를 CustomOAuth2User로 감싸서 반환
         //    → 세션/SecurityContextHolder의 principal에 User.id가 포함됩니다.
